@@ -32,6 +32,7 @@ zstyle ':prezto:load' pmodule \
   'spectrum' \
   'utility' \
   'completion' \
+  'syntax-highlighting' \
   'history-substring-search' \
   'prompt'
 
@@ -40,7 +41,7 @@ zstyle ':prezto:load' pmodule \
 #
 
 # Set the key mapping style to 'emacs' or 'vi'.
-zstyle ':prezto:module:editor' key-bindings 'emacs'
+# zstyle ':prezto:module:editor' key-bindings 'emacs'
 
 # Auto convert .... to ../..
 # zstyle ':prezto:module:editor' dot-expansion 'yes'
@@ -110,20 +111,25 @@ zstyle ':prezto:module:prompt' theme 'savetheclocktower'
 #
 
 # Set syntax highlighters.
-# By default, only the main highlighter is enabled.
-# zstyle ':prezto:module:syntax-highlighting' highlighters \
-#   'main' \
-#   'brackets' \
-#   'pattern' \
-#   'cursor' \
-#   'root'
-#
-# Set syntax highlighting styles.
-# zstyle ':prezto:module:syntax-highlighting' styles \
-#   'builtin' 'bg=blue' \
-#   'command' 'bg=blue' \
-#   'function' 'bg=blue'
-#
+# By default main, brackets, and cursor are enabled.
+zstyle ':prezto:module:syntax-highlighting' highlighters \
+  'main' \
+  'brackets' \
+  'pattern' \
+  'cursor' \
+  'root'
+
+# Trying to make this Vibrant Ink–ish.
+zstyle ':prezto:module:syntax-highlighting' styles \
+  'assign' 'fg=blue' \
+  'reserved-word' 'fg=red' \
+  'builtin' 'fg=yellow' \
+  'function' 'fg=yellow' \
+  'precommand' 'fg=yellow' \
+  'command' 'fg=yellow' \
+  'alias' 'fg=yellow' \
+  'single-quoted-argument' 'fg=green' \
+  'double-quoted-argument' 'fg=green'
 
 #
 # Terminal
