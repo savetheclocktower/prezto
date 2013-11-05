@@ -78,6 +78,7 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 # =============
 
 # Turn a video file into a GIF.
+# (adapted from https://gist.github.com/SlexAxton/4989674)
 gifify() {
   if [[ -n "$1" ]]; then
     if [[ $2 == '--good' ]]; then
