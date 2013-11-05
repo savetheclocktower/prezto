@@ -61,6 +61,9 @@ fi
 
 [[ -s `brew --prefix`/etc/autojump.sh ]] && . `brew --prefix`/etc/autojump.sh
 
+# Needed so autojump can use tab completion.
+autoload -U compinit && compinit -u
+
 
 # =========
 # = RBENV =
