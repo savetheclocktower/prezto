@@ -18,10 +18,13 @@ function +vi-git-status() {
 
 function prompt_savetheclocktower_precmd {
   vcs_info
+  
+  # Format rbenv version.
+  prompt_savetheclocktower_rbenv_version
 }
 
 function prompt_savetheclocktower_rbenv_version {
-  rbenv version | sed -e "s/ (set.*$//"
+  _prompt_savetheclocktower_rbenv_version=$(rbenv version | sed -e "s/ (set.*$//")
 }
 
 function prompt_savetheclocktower_setup {
@@ -48,7 +51,7 @@ function prompt_savetheclocktower_setup {
 
   # Define prompts.
   PROMPT='%B%F{cyan}%3~%f%b${vcs_info_msg_0_} %F{red}➜%f  '
-  RPROMPT='%B%F{black}($(prompt_savetheclocktower_rbenv_version))%f%b'
+  RPROMPT='%B%F{black}($_prompt_savetheclocktower_rbenv_version)%f%b'
 }
 
 prompt_savetheclocktower_setup "$@"
