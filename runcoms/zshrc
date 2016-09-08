@@ -16,9 +16,11 @@ fi
 # = BASICS =
 # ==========
 
-export PATH="$PATH:/Users/andrew/bin"
+export PATH="$PATH:/Users/andrew.dupont/bin"
 export EDITOR="/usr/local/bin/mate -w"
 export VISUAL=$EDITOR
+
+# export SLIMERJSLAUNCHER="/Applications/Firefox.app/Contents/MacOS/firefox"
 
 # Makes sure patterns match properly in my locale.
 export LC_CTYPE=en_US.UTF-8
@@ -30,9 +32,16 @@ export LC_CTYPE=en_US.UTF-8
 # 64-bit architecture, so x86_64 should work for most things, but I've found
 # the need to toggle between these in the past.
 
-# export ARCHFLAGS="-arch i386 -arch x86_64" 
+# export ARCHFLAGS="-arch i386 -arch x86_64"
 export ARCHFLAGS='-arch x86_64'
 
+# ======
+# = GO =
+# ======
+
+# Why am I doing this?
+export GOPATH=$HOME/go
+export PATH="$PATH:$GOPATH/bin"
 
 # =======
 # = GIT =
@@ -64,13 +73,21 @@ fi
 # Needed so autojump can use tab completion.
 autoload -U compinit && compinit -u
 
-
 # =========
 # = RBENV =
 # =========
 
 if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
+
+# ============
+# = FIREBIRD =
+# ============
+
+# export PATH="$PATH:/Users/andrew.dupont/Code/BV/firebird/node_modules/.bin"
+
+# All the AWS/Nexus stuff is necessary for running Firebird now.
+source ~/.ec2/nexus-environment
 
 
 # =============
@@ -79,22 +96,24 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 # Turn a video file into a GIF.
 # (adapted from https://gist.github.com/SlexAxton/4989674)
-gifify() {
+function gifify() {
   if [[ -n "$1" ]]; then
     if [[ $2 == '--good' ]]; then
+      # High quality.
       ffmpeg -i $1 -r 10 -vcodec png out-static-%05d.png
-      time convert -verbose +dither -layers Optimize out-static*.png  GIF:- | gifsicle --colors 128 --delay=5 --loop --optimize=3 --multifile - > $1.gif
-      rm out-static*.png
+      time convert -verbose +dither -layers Optimize out-static-*.png  GIF:- | gifsicle --colors 128 --delay=5 --loop --optimize=3 --multifile - > $1.gif
+      rm -f out-static-*.png
     else
+      # Low quality.
       ffmpeg -i $1 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > $1.gif
     fi
   else
-    echo "Proper usage: gifify <input_movie.mov>. You DO need to include extension."
+    echo "Usage: gifify <input_movie.mov>. You DO need to include extension."
   fi
 }
 
 # `cd` into the directory of the frontmost Finder window.
-cdf() {
+function cdf() {
   cd "`osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)'`"
 }
 
@@ -122,3 +141,33 @@ function gf() {
 AWK
   )" | less -F
 }
+
+# Play a MIDI file.
+function playmidi() {
+  SOUNDFONT='/usr/local/share/fluidsynth/generaluser.v.1.44.sf2'
+  if [ -e "$SOUNDFONT" ]
+  then 
+    for i in "$@"
+    do 
+      if [ -e "$i" ]
+      then
+        (fluidsynth -i "$SOUNDFONT" "$i"  2>&1) >/dev/null
+      else
+        echo "[playmidi]: cannot find file at $i"   
+        return 1
+      fi  
+    done 
+  else
+    echo "[playmidi]: SOUNDFONT file not found at $SOUNDFONT"
+    return 1
+  fi  
+}
+
+
+# ===========
+# = ALIASES =
+# ===========
+
+alias gnode='/usr/local/bin/node'
+alias gnpm='/usr/local/bin/npm'
+

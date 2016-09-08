@@ -54,5 +54,8 @@ if [[ -n "$key_info" ]]; then
     bindkey -M "$keymap" "$key_info[Up]" history-substring-search-up
     bindkey -M "$keymap" "$key_info[Down]" history-substring-search-down
   done
+  
+  # Up and down arrows. -APD
+  bindkey '^[[A' history-substring-search-up
+  bindkey '^[[B' history-substring-search-down  
 fi
-
