@@ -1,0 +1,4 @@
+#compdef mosh
+
+zstyle -a ':completion:*:hosts' hosts 'known_hosts'
+_arguments "*: :$known_hosts"

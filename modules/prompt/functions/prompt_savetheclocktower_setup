@@ -16,16 +16,102 @@ function +vi-git-status() {
   fi
 }
 
+
+# function asdf_prompt_info() {
+#   # If asdf isn't present nothing to do
+#   (( ${+commands[asdf]} )) || return 0
+#   local currenttools=$(asdf current 2> /dev/null)
+#   local toolvers_fname=".tool-versions"
+#   # Decide how we filter what is shown
+#   # if [[ $ZSH_THEME_ASDF_PROMPT_FILTER != "ALL" ]]; then
+#   #   currenttools=$(echo $currenttools | grep -v ' system ' -)
+#   # fi
+#   currenttools=$(echo $currenttools | grep -v "$HOME/$toolvers_fname" -)
+#   # if [[ -z "${ZSH_THEME_ASDF_PROMPT_FILTER// }" \
+#   #     || $ZSH_THEME_ASDF_PROMPT_FILTER == "COMPACT" ]]; then
+#   #   currenttools=$(echo $currenttools | grep -v "$HOME/$toolvers_fname" -)
+#   # fi
+#
+#   # Decide if anything is left to process and return if not.
+#   [[ -z "${currenttools// }" ]] && return
+#
+#   local toolslist=$(echo $currenttools | awk '{ print $1 }')
+#   local versionslist
+#   # Decide if we do semi-major version (default) or full version info
+#   # if [[ $ZSH_THEME_ASDF_PROMPT_VERSION_DETAIL == "PATCH" ]]; then
+#   #   versionslist=$(echo $currenttools | awk '{ print $2 }' - )
+#   # elif [[ $ZSH_THEME_ASDF_PROMPT_VERSION_DETAIL == "MAJOR" ]]; then
+#   #   versionslist=$(echo $currenttools | awk '{ print $2 }' - \
+#   #     | sed -E 's/([^\.]*)(\.[^\.]*)(\..*)/\1/g'  \
+#   #     | sed 's/system/s/g' )
+#   # else
+#   versionslist=$(echo $currenttools | awk '{ print $2 }' - \
+#     | sed -E 's/([^\.]*)(\.[^\.]*)(\..*)/\1\2/g'  \
+#     | sed 's/system/sys/g' )
+#   # fi
+#   # Decide if we want to print out origins or not (default)
+#   local originslist
+#   if [[ $ZSH_THEME_ASDF_PROMPT_VERSION_RESOLUTION == "COMPACT" ]]; then
+#     originslist=$(echo $currenttools \
+#       | awk '{ $1=$2=""; print $0 }' \
+#       | sed 's/^ *//g' \
+#       | sed -E 's#ASDF_.*VERSION#\$#' \
+#       | sed -E "s#$HOME\/*($toolvers_fname|\.[^\/]+)\$#\~#" \
+#       | sed -E "s#$PWD\/*($toolvers_fname|\.[^\/]+)\$#\.#" \
+#       | sed -E "s#($HOME\/.+)#\/#" )
+#   else
+#     originslist=$(echo $currenttools | awk '{ print ""}' -)
+#   fi
+#   # Paste columns together
+#   local reassembled=$(paste  <(echo $toolslist) <(echo $versionslist) \
+#     <(echo $originslist))
+#   # Structure info in nice, separate lines
+#   local multilinesummary=$(echo $reassembled \
+#     | awk '{ print $1 ": " $2 $3 }' - )
+#   # If more than one line, scrunch them up
+#   local asdfsummary=$( [[ $( echo $multilinesummary | wc -l ) -le 1 ]] \
+#     && echo $multilinesummary \
+#     || (echo $multilinesummary | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/, /g'))
+#
+#   # Oddly formatted to avoid spurious spaces
+#   echo "${ZSH_THEME_ASDF_PROMPT_PREFIX-\{}"\
+# "${asdfsummary}${ZSH_THEME_ASDF_PROMPT_POSTFIX-\}}"
+# }
+
+
 function prompt_savetheclocktower_precmd {
   vcs_info
-  
-  # Format rbenv version.
-  prompt_savetheclocktower_rbenv_version
+
+  prompt_savetheclocktower_asdf_node_version
+  prompt_savetheclocktower_asdf_ruby_version
+  # prompt_savetheclocktower_rbenv_version
+  # prompt_savetheclocktower_nvm_version
 }
 
 function prompt_savetheclocktower_rbenv_version {
   _prompt_savetheclocktower_rbenv_version=$(rbenv version | sed -e "s/ (set.*$//")
 }
+
+function prompt_savetheclocktower_nvm_version {
+  _prompt_savetheclocktower_nvm_version=$(nvm current | sed -e "s/^v//")
+}
+
+function prompt_savetheclocktower_asdf_ruby_version {
+  local version=$(asdf current ruby 2>&1 | cut -c 17-28 | xargs)
+  if [[ $version == "______" ]]; then
+    version="none"
+  fi
+  _prompt_savetheclocktower_asdf_ruby_version=${version}
+}
+
+function prompt_savetheclocktower_asdf_node_version {
+  local version=$(asdf current nodejs | cut -c 17-28 | xargs)
+  if [[ $version == "______" ]]; then
+    version="none"
+  fi
+  _prompt_savetheclocktower_asdf_node_version=${version}
+}
+
 
 function prompt_savetheclocktower_setup {
   setopt LOCAL_OPTIONS
@@ -51,8 +137,11 @@ function prompt_savetheclocktower_setup {
 
   # Define prompts.
   PROMPT='%B%F{cyan}%3~%f%b${vcs_info_msg_0_} %F{red}➜%f  '
-  RPROMPT='%B%F{black}($_prompt_savetheclocktower_rbenv_version)%f%b'
+  # rtag='🆁'
+  # ntag='🅹'
+  rtag='Ruby'
+  ntag='Node'
+  RPROMPT='%B%F{black}($rtag $_prompt_savetheclocktower_asdf_ruby_version / $ntag $_prompt_savetheclocktower_asdf_node_version)%f%b'
 }
 
 prompt_savetheclocktower_setup "$@"
-

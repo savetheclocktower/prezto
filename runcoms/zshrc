@@ -16,12 +16,14 @@ fi
 # = BASICS =
 # ==========
 
-export PATH="$PATH:/Users/andrew/bin"
+export PATH="$PATH:$HOME/bin"
 export EDITOR="/usr/local/bin/mate -w"
 export VISUAL=$EDITOR
 
 # Makes sure patterns match properly in my locale.
 export LC_CTYPE=en_US.UTF-8
+
+export GPG_TTY=$(tty)
 
 # ============
 # = BUILDING =
@@ -30,8 +32,9 @@ export LC_CTYPE=en_US.UTF-8
 # 64-bit architecture, so x86_64 should work for most things, but I've found
 # the need to toggle between these in the past.
 
-# export ARCHFLAGS="-arch i386 -arch x86_64" 
-export ARCHFLAGS='-arch x86_64'
+# export ARCHFLAGS="-arch i386 -arch x86_64"
+# export ARCHFLAGS="-arch i386"
+# export ARCHFLAGS='-arch x86_64'
 
 
 # =======
@@ -64,14 +67,39 @@ fi
 # Needed so autojump can use tab completion.
 autoload -U compinit && compinit -u
 
+# ==============
+# = COMPLETION =
+# ==============
+
+compdef mosh=ssh
 
 # =========
 # = RBENV =
 # =========
 
-if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
+# Replaced with `asdf`
+# if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 
+# =========
+# = MYSQL =
+# =========
+
+export MYSQL_PATH=/usr/local/Cellar/mysql/5.7.17
+export PATH="$PATH:$MYSQL_PATH/bin"
+
+# =============
+# = RACKSPACE =
+# =============
+
+OS_USERNAME="slicehost979"
+OS_TENANT_NAME="755917"
+OS_AUTH_SYSTEM="rackspace"
+OS_PASSWORD="bb589418cdbec7d678b534b3c9734f6a"
+OS_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0/"
+OS_REGION_NAME="DFW"
+OS_NO_CACHE=1
+export OS_USERNAME OS_TENANT_NAME OS_AUTH_SYSTEM OS_PASSWORD OS_AUTH_URL OS_REGION_NAME OS_NO_CACHE
 
 # =============
 # = FUNCTIONS =
@@ -79,14 +107,14 @@ if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 # Turn a video file into a GIF.
 # (adapted from https://gist.github.com/SlexAxton/4989674)
-gifify() {
+_gifify() {
   if [[ -n "$1" ]]; then
     if [[ $2 == '--good' ]]; then
       ffmpeg -i $1 -r 10 -vcodec png out-static-%05d.png
       time convert -verbose +dither -layers Optimize out-static*.png  GIF:- | gifsicle --colors 128 --delay=5 --loop --optimize=3 --multifile - > $1.gif
-      rm out-static*.png
+      rm -if out-static*.png
     else
-      ffmpeg -i $1 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > $1.gif
+      ffmpeg -i "$1" -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > "$1.gif"
     fi
   else
     echo "Proper usage: gifify <input_movie.mov>. You DO need to include extension."
@@ -122,3 +150,27 @@ function gf() {
 AWK
   )" | less -F
 }
+
+
+# HACK: Why is this needed?
+bindkey "^[[A" history-substring-search-up   # up arrow
+bindkey "^[[B" history-substring-search-down # down arrow
+
+# ===========
+# = ALIASES =
+# ===========
+
+# alias npx='npx --no-install'
+# function npxi () {
+#   unalias npx
+#   npx $@
+#   alias npx='npx --no-install'
+# }
+alias rg='nocorrect rg'
+alias atomx='/usr/local/bin/atom'
+alias atom='pulsar'
+alias be='bundle exec'
+
+
+. "$HOME/.asdf/asdf.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
