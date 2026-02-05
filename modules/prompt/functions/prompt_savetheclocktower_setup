@@ -1,0 +1,100 @@
+#
+# A monochrome theme that displays basic information.
+#
+# Authors:
+#   Brian Tse <briankftse@gmail.com>
+#   Sorin Ionescu <sorin.ionescu@gmail.com>
+#
+# Screenshots:
+#   http://i.imgur.com/zLZNK.png
+#
+
+pmodload 'helper'
+
+function +vi-git-status() {
+  # Check for untracked files or updated submodules since vcs_info does not.
+  if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
+    hook_com[unstaged]='%F{red}●%f'
+  fi
+}
+
+
+function prompt_savetheclocktower_precmd {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+
+  _prompt_savetheclocktower_pwd=$(prompt-pwd)
+
+  vcs_info
+
+  # Handle updating git data. We also clear the git prompt data if we're in a
+  # different git root now.
+  if (( $+functions[git-dir] )); then
+    local new_git_root="$(git-dir 2> /dev/null)"
+    if [[ $new_git_root != $_savetheclocktower_cur_git_root ]]; then
+      _prompt_savetheclocktower_git=''
+      _savetheclocktower_cur_git_root=$new_git_root
+    fi
+  fi
+
+  prompt_savetheclocktower_asdf_node_version
+  prompt_savetheclocktower_asdf_ruby_version
+}
+
+function prompt_savetheclocktower_asdf_ruby_version {
+  local version=$(asdf current ruby 2>&1 | cut -c 17-28 | xargs)
+  if [[ $version == "______" ]]; then
+    version="none"
+  fi
+  _prompt_savetheclocktower_asdf_ruby_version=${version}
+}
+
+function prompt_savetheclocktower_asdf_node_version {
+  local version=$(asdf current nodejs | cut -c 17-28 | xargs)
+  if [[ $version == "______" ]]; then
+    version="none"
+  fi
+  _prompt_savetheclocktower_asdf_node_version=${version}
+}
+
+
+function prompt_savetheclocktower_setup {
+  setopt LOCAL_OPTIONS
+  unsetopt XTRACE KSH_ARRAYS
+  prompt_opts=(cr percent subst)
+
+  # Load required functions.
+  autoload -Uz add-zsh-hook
+  autoload -Uz vcs_info
+
+  # Add hook for calling git-info before each command.
+  add-zsh-hook precmd prompt_savetheclocktower_precmd
+
+  # Tell prezto we can manage this prompt.
+  zstyle ':prezto:module:prompt' managed 'yes'
+
+  # Set editor-info parameters. (no idea what this means)
+  zstyle ':prezto:module:editor:info:completing' format '%B%F{7}...%f%b'
+  zstyle ':prezto:module:editor:info:keymap:primary' format ' %B%F{1}❯%F{3}❯%F{2}❯%f%b'
+  zstyle ':prezto:module:editor:info:keymap:primary:overwrite' format ' %F{3}♺%f'
+  zstyle ':prezto:module:editor:info:keymap:alternate' format ' %B%F{2}❮%F{3}❮%F{1}❮%f%b'
+
+  # Set vcs_info parameters.
+  zstyle ':vcs_info:*' enable git
+  zstyle ':vcs_info:*' check-for-changes true
+  zstyle ':vcs_info:*' stagedstr '%F{green}●%f'
+  zstyle ':vcs_info:*' unstagedstr '%F{yellow}●%f'
+  zstyle ':vcs_info:*' formats ' %F{yellow}(%b%c%f%F{yellow})%f'
+  zstyle ':vcs_info:*' actionformats " %F{yellow}(%b%c)%f"
+  zstyle ':vcs_info:(sv[nk]|bzr):*' branchformat '%b|%F{cyan}%r%f'
+  zstyle ':vcs_info:git*+set-message:*' hooks git-status
+
+  # Define prompts.
+  PROMPT='%B%F{cyan}%3~%f%b${vcs_info_msg_0_} %F{red}➜%f  '
+
+  rtag='Ruby'
+  ntag='Node'
+  RPROMPT='%B%F{black}($rtag $_prompt_savetheclocktower_asdf_ruby_version / $ntag $_prompt_savetheclocktower_asdf_node_version)%f%b'
+}
+
+prompt_savetheclocktower_setup "$@"

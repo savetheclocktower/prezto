@@ -10,4 +10,122 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Customize to your needs...
+
+# BASICS
+# ======
+
+export PATH="$PATH:/Users/andrew/bin"
+export EDITOR="pulsar -w"
+export VISUAL=$EDITOR
+
+export LC_CTYPE=en_US.UTF-8
+
+# GIT
+# ===
+
+export GIT_COMMITTER_NAME="Andrew Dupont"
+export GIT_COMMITTER_EMAIL="github@andrewdupont.net"
+
+export GIT_EDITOR=$EDITOR
+git config --global core.editor $EDITOR
+
+# GITHUB
+# ======
+
+# Keep this outside of version control.
+if [[ -s "${ZDOTDIR:-$HOME}/.github" ]]; then
+  source "${ZDOTDIR:-$HOME}/.github"
+fi
+
+# AUTOJUMP
+# ========
+
+[[ -s `brew --prefix`/etc/autojump.sh ]] && . `brew --prefix`/etc/autojump.sh
+
+# Needed so autojump can use tab completion.
+autoload -U compinit && compinit -u
+
+# ASDF
+# ====
+
+. "$HOME/.asdf/asdf.sh"
+source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
+
+# SECRETS
+# =======
+
+if [[ -s "${ZDOTDIR:-$HOME}/.secrets" ]]; then
+  source "${ZDOTDIR:-$HOME}/.secrets"
+fi
+
+# FUNCTIONS
+# =========
+
+# Turn a video file into a GIF.
+# (adapted from https://gist.github.com/SlexAxton/4989674)
+_gifify() {
+  if [[ -n "$1" ]]; then
+    if [[ $2 == '--good' ]]; then
+      ffmpeg -i $1 -r 10 -vcodec png out-static-%05d.png
+      time convert -verbose +dither -layers Optimize out-static*.png  GIF:- | gifsicle --colors 128 --delay=5 --loop --optimize=3 --multifile - > $1.gif
+      rm -if out-static*.png
+    else
+      ffmpeg -i "$1" -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > "$1.gif"
+    fi
+  else
+    echo "Proper usage: gifify <input_movie.mov>. You DO need to include extension."
+  fi
+}
+
+# `cd` into the directory of the frontmost Finder window.
+cdf() {
+  cd "`osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)'`"
+}
+
+# Start an HTTP server from a directory, optionally specifying the port.
+function server() {
+  local port="${1:-8000}"
+  open "http://localhost:${port}/"
+  # Set the default Content-Type to `text/plain` instead of
+  # `application/octet-stream`. And serve everything as UTF-8 — although not
+  # technically correct, this doesn't break anything for binary files.
+  python3 -m http.server
+  #python -c $'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
+}
+
+# HACK: This might be needed in the future.
+# bindkey "^[[A" history-substring-search-up   # up arrow
+# bindkey "^[[B" history-substring-search-down # down arrow
+
+
+# ALIASES
+# =======
+setopt HIST_IGNORE_SPACE
+alias rg='nocorrect rg'
+alias atomx='/usr/local/bin/atom'
+alias atom='pulsar'
+alias be='bundle exec'
+alias yt-dlp=" yt-dlp"
+
+# EMSDK
+# =====
+
+export PATH="$PATH:/Users/andrew/Code/JavaScript/emsdk"
+
+# TEMP?
+#export LDFLAGS="-L/usr/local/opt/libiconv/lib"
+#export CPPFLAGS="-I/usr/local/opt/libiconv/include"
+export LIBRARY_PATH=$LIBRARY_PATH:$(brew --prefix)/lib #:$(brew --prefix)/opt/libiconv/lib
+
+# >>> juliaup initialize >>>
+
+# !! Contents within this block are managed by juliaup !!
+
+path=('/Users/andrew/.juliaup/bin' $path)
+export PATH
+
+# <<< juliaup initialize <<<
+
+. "$HOME/.local/bin/env"
+
+
